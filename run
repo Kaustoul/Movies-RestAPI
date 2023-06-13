@@ -1,0 +1,11 @@
+NAME=main.py
+
+if [ -v $FLASK_APP ]; then
+  export FLASK_APP=$NAME
+fi
+
+if [ -v $FLASK_ENV ]; then
+  export FLASK_ENV=development
+fi
+
+flask run
