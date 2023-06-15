@@ -17,13 +17,21 @@ def fetch_all_movies():
   movies = [Movie(id=movie[0], title=movie[1], description=movie[2], release_year=movie[3]).jsonify() for movie in result]
   return movies, 200
 
+@app.route('/movies/<int:id>', methods=['GET'])
+def fetch_movie(id):
+  result = db.get_movie(id)
+  if result is None:
+    return {"message": "Invalid movie ID"}, 404
+  
+  movie = Movie(id = result[0], title=result[1], description=result[2], release_year=result[3])
+  return movie.jsonify(), 200
+
 @app.route('/movies', methods=['POST'])
 def create_movie():
   movie = Movie.from_json(request.get_json())
   if not movie:
     return {"message": "Invalid request params"}, 400
   
-  print(movie)
   result = db.insert_movie(movie)
   if result == -2:
     return {"message": "'release_year' must be a 4 digit number"}, 400
@@ -32,7 +40,6 @@ def create_movie():
   else:
     movie.id = result
     return movie.jsonify(), 200
-
 
 if __name__ == '__main__':
   app.run()

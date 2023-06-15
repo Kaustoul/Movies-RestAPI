@@ -27,7 +27,7 @@ class Database:
       self.con.commit()
       return self.cur.lastrowid
     except Exception as e:
-      print(e)
+      # print(e)
       # Check constraint on release_year failed
       if isinstance(e, sqlite3.IntegrityError) and "CHECK constraint" in str(e):
         return -2
@@ -39,7 +39,10 @@ class Database:
     return self.cur.fetchall()
 
   def get_movie(self, id):
-    self.cur.execute('SELECT * FROM movies WHERE id=?', id)
+    # try:
+    self.cur.execute('SELECT * FROM movies WHERE id=?', (id, ))
+    # except Exception as e:
+    #   print("Exception: " + str(e))
     return self.cur.fetchone()
   
   def update_movie(self, id, movie_json):
@@ -53,6 +56,7 @@ class Database:
        id))
 
     self.connection.commit()
+    return self.cur.rowcount
   
   def delete_movie(self, id):
     self.cursor.execute('DELETE FROM movies WHERE id = ?', id)
