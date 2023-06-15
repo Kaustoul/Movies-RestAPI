@@ -45,17 +45,25 @@ class Database:
     #   print("Exception: " + str(e))
     return self.cur.fetchone()
   
-  def update_movie(self, id, movie_json):
-    self.cursor.execute('''INSERT INTO movies 
-      (title, description, release_year) 
-      VALUES (?, ?, ?) 
-      WHERE id=?''',
-      (movie_json['title'], 
-       movie_json['description'], 
-       movie_json['release_year'], 
-       id))
+  def update_movie(self, movie):
+    desc = "NULL"
+    if movie.description is not None:
+      desc = f'"{movie.description}"'
 
-    self.connection.commit()
+    try:
+      self.cur.execute(f'''UPDATE movies SET
+        title = "{movie.title}", 
+        description = {desc},
+        release_year = {movie.release_year} 
+        WHERE id = {movie.id}''',
+      )
+
+      self.con.commit()
+    except Exception as e:
+      print(str(e))
+      if isinstance(e, sqlite3.IntegrityError) and "CHECK constraint" in str(e):
+        return -2
+      
     return self.cur.rowcount
   
   def delete_movie(self, id):

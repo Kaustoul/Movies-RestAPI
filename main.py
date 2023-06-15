@@ -40,6 +40,26 @@ def create_movie():
   else:
     movie.id = result
     return movie.jsonify(), 200
+  
+@app.route('/movies/<int:id>', methods = ['PUT'])
+def update_movie(id):
+  movie = Movie.from_json(request.get_json())
+  if not movie:
+    return {"message": "Invalid request params"}, 400
+  
+  movie.id = id
+  result = db.update_movie(movie)
+  print("Result: ", result)
+
+  if result == -2:
+    return {"message": "'release_year' must be a 4 digit number"}, 400
+  
+  if (result < 1):
+    return {"message": "Invalid movie ID"}, 404
+  
+  return movie.jsonify()
+  
+
 
 if __name__ == '__main__':
   app.run()
