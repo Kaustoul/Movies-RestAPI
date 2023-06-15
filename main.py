@@ -1,29 +1,39 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from db import Database
-
-class Movie:
-  def __init__(self, name, description, release_year):
-    self.name = name
-    self.description = description
-    self.release_year = release_year
-
-  def __repr__(self):
-    return f'{self.name} ({self.releae_year} - {self.description})'
-  
-db = Database('movies.db')
-db.connect()
-db.create_table()
+from movie import Movie
 
 app = Flask(__name__)
+db = Database("movies.db")
+db.connect()
+db.create_table()
 
 @app.route('/')
 def hello():
   return 'Hello world!'
 
+@app.route('/movies', methods=['GET'])
+def fetch_all_movies():
+  result = db.get_all_movies()
+  movies = [Movie(id=movie[0], title=movie[1], description=movie[2], release_year=movie[3]).jsonify() for movie in result]
+  return movies, 200
 
 @app.route('/movies', methods=['POST'])
-def hello():
-  return {}
+def create_movie():
+  movie = Movie.from_json(request.get_json())
+  if not movie:
+    return {"message": "Invalid request params"}, 400
+  
+  print(movie)
+  result = db.insert_movie(movie)
+  if result == -2:
+    return {"message": "'release_year' must be a 4 digit number"}, 400
+  elif result == -1:
+    return {"message": "Failed to create a new entry in database."}, 500
+  else:
+    movie.id = result
+    return movie.jsonify(), 200
+
 
 if __name__ == '__main__':
   app.run()
+  db.close()
