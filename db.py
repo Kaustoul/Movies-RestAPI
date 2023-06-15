@@ -35,7 +35,6 @@ class Database:
       self.con.commit()
       return self.cur.lastrowid
     except Exception as e:
-      # print(e)
       # Check constraint on release_year failed
       if isinstance(e, sqlite3.IntegrityError) and "CHECK constraint" in str(e):
         return -2

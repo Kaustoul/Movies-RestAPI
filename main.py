@@ -2,10 +2,20 @@ from flask import Flask, request, jsonify
 from db import Database
 from movie import Movie
 
+# Setup flask
 app = Flask(__name__)
-db = Database("movies.db")
-db.connect()
-db.create_table()
+db = None
+
+
+def setup_db(name):
+  global db
+  db = Database(name)
+  db.connect()
+  db.create_table()
+
+def clear_db():
+  db.cur.execute("DELETE FROM movies")
+  db.con.commit()
 
 @app.route('/')
 def hello():
@@ -39,7 +49,7 @@ def create_movie():
     return {"message": "Failed to create a new entry in database."}, 500
   else:
     movie.id = result
-    return movie.jsonify(), 200
+    return movie.jsonify(), 201
   
 @app.route('/movies/<int:id>', methods = ['PUT'])
 def update_movie(id):
@@ -49,17 +59,22 @@ def update_movie(id):
   
   movie.id = id
   result = db.update_movie(movie)
-  print("Result: ", result)
 
   if result == -2:
     return {"message": "'release_year' must be a 4 digit number"}, 400
   
-  if (result < 1):
+  elif result == -1:
+    {"message": "Failed to create a new entry in database."}, 500
+
+  elif (result < 1):
     return {"message": "Invalid movie ID"}, 404
   
-  return movie.jsonify()
+  return movie.jsonify(), 200
 
+setup_db("movies.db")
 
 if __name__ == '__main__':
-  app.run()
-  db.close()
+  try:
+    app.run()
+  finally:
+    db.close()
