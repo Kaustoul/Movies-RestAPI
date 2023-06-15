@@ -6,6 +6,7 @@ class Movie:
     self.release_year = release_year
 
   def jsonify(self):
+    """Json representation of the movie"""
     return {'id': self.id, 'title': self.title, 'description': self.description, 'release_year': self.release_year}
 
   def __repr__(self):
@@ -13,6 +14,7 @@ class Movie:
   
   @staticmethod
   def from_json(json):
+    """Loads a movie from json representation"""
     if json.get('title') is None or json.get('release_year') is None:
       return None
     

@@ -58,7 +58,6 @@ def update_movie(id):
     return {"message": "Invalid movie ID"}, 404
   
   return movie.jsonify()
-  
 
 
 if __name__ == '__main__':

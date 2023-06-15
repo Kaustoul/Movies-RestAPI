@@ -8,11 +8,13 @@ class Database:
     self.cur = None
 
   def connect(self):
+    """Connects to the database"""
     self.con = sqlite3.connect(self.name, check_same_thread=False)
     self.cur = self.con.cursor()
 
   def create_table(self):
-    self.cur.execute('''CREATE TABLE IF NOT EXISTS movies(
+    """Creates table 'Movies' if it does not already exist"""
+    self.cur.execute('''CREATE TABLE IF NOT EXISTS Movies(
       id INTEGER PRIMARY KEY NOT NULL,
       title VARCHAR(255),
       description TEXT,
@@ -21,6 +23,12 @@ class Database:
     self.con.commit()
     
   def insert_movie(self, movie):
+    """
+    Inserts a movie the database
+    :return: <id> of newly created movie if successful
+             -1 for internal database error
+             -2 if CHECK constraint fails
+    """
     try:
       self.cur.execute("INSERT INTO movies (title, description, release_year) VALUES (?, ?, ?)",
                           (movie.title, movie.description, movie.release_year))
@@ -35,17 +43,23 @@ class Database:
       return -1
 
   def get_all_movies(self):
+    """Fetches all movies data from database"""
     self.cur.execute("SELECT * FROM movies")
     return self.cur.fetchall()
 
   def get_movie(self, id):
-    # try:
+    """Fetches movie data with given id"""
     self.cur.execute('SELECT * FROM movies WHERE id=?', (id, ))
-    # except Exception as e:
-    #   print("Exception: " + str(e))
     return self.cur.fetchone()
   
   def update_movie(self, movie):
+    """
+    Updates movie data with given id
+
+    :return: <amount of changed rows> if successful
+             -1 for internal database error
+             -2 if CHECK constraint fails
+    """
     desc = "NULL"
     if movie.description is not None:
       desc = f'"{movie.description}"'
@@ -63,6 +77,8 @@ class Database:
       print(str(e))
       if isinstance(e, sqlite3.IntegrityError) and "CHECK constraint" in str(e):
         return -2
+      
+      return -1
       
     return self.cur.rowcount
   
